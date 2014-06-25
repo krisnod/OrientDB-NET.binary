@@ -10,13 +10,17 @@ namespace Orient.Client
         private bool _containsConnection;
         private Connection _connection;
 
+        public IDictionary<ORID, ODocument> ClientCache { get; private set; }
+
         public OSqlCreate Create { get { return new OSqlCreate(_connection); } }
         public OSqlDelete Delete { get { return new OSqlDelete(_connection); } }
 
         public ODatabase(string alias)
         {
             _connection = OClient.ReleaseConnection(alias);
+            _connection.Database = this;
             _containsConnection = true;
+            ClientCache = new Dictionary<ORID, ODocument>();
         }
 
         public List<OCluster> GetClusters()
@@ -93,6 +97,26 @@ namespace Orient.Client
 
         #endregion
 
+        public List<ODocument> Gremlin(string query)
+        {
+            CommandPayload payload = new CommandPayload();
+            payload.Language = "gremlin";
+            payload.Type = CommandPayloadType.Sql;
+            payload.Text = query;
+            payload.NonTextLimit = -1;
+            payload.FetchPlan = "";
+            payload.SerializedParams = new byte[] { 0 };
+
+            Command operation = new Command();
+            operation.OperationMode = OperationMode.Asynchronous;
+            operation.ClassType = CommandClassType.NonIdempotent;
+            operation.CommandPayload = payload;
+
+            ODocument document = _connection.ExecuteOperation<Command>(operation);
+
+            return document.GetField<List<ODocument>>("Content");
+        }
+
         public OCommandResult Command(string sql)
         {
             CommandPayload payload = new CommandPayload();
@@ -116,6 +140,8 @@ namespace Orient.Client
         {
             if (_containsConnection)
             {
+                _connection.Database = null;
+
                 if (_connection.IsReusable)
                 {
                     OClient.ReturnConnection(_connection);
@@ -124,7 +150,7 @@ namespace Orient.Client
                 {
                     _connection.Dispose();
                 }
-
+                
                 _containsConnection = false;
             }
         }
