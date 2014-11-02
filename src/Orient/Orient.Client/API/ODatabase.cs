@@ -40,6 +40,12 @@ namespace Orient.Client
             return new OSqlInsert(_connection);
         }
 
+        public OSqlInsert Insert(string className)
+        {
+            return new OSqlInsert(_connection)
+                .Insert(className);
+        }
+
         public OSqlInsert Insert<T>(T obj)
         {
             return new OSqlInsert(_connection)
