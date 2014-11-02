@@ -45,6 +45,16 @@ namespace Orient.Client
             ODocument document = _connection.ExecuteOperation<DbDrop>(operation);
         }
 
+        public void Shutdown(string userName, string userPassword)
+        {
+            Shutdown operation = new Shutdown();
+
+            operation.UserName = userName;
+            operation.UserPassword = userPassword;
+
+            ODocument document = _connection.ExecuteOperation<Shutdown>(operation);
+        }
+
         public void Close()
         {
             _connection.Dispose();
