@@ -24,6 +24,10 @@ namespace Orient.Client.Protocol.Operations
             request.DataItems.Add(new RequestDataItem() { Type = "string", Data = BinarySerializer.ToArray(OClient.DriverVersion) });
             request.DataItems.Add(new RequestDataItem() { Type = "short", Data = BinarySerializer.ToArray(OClient.ProtocolVersion) });
             request.DataItems.Add(new RequestDataItem() { Type = "string", Data = BinarySerializer.ToArray(OClient.ClientID) });
+
+            if (OClient.ProtocolVersion >= 22)
+                request.DataItems.Add(new RequestDataItem() { Type = "string", Data = BinarySerializer.ToArray(OClient.RecordFormat) });
+
             request.DataItems.Add(new RequestDataItem() { Type = "string", Data = BinarySerializer.ToArray(DatabaseName) });
             request.DataItems.Add(new RequestDataItem() { Type = "string", Data = BinarySerializer.ToArray(DatabaseType.ToString().ToLower()) });
             request.DataItems.Add(new RequestDataItem() { Type = "string", Data = BinarySerializer.ToArray(UserName) });
@@ -62,12 +66,15 @@ namespace Orient.Client.Protocol.Operations
 
                     cluster.Id = reader.ReadInt16EndianAware();
 
-                    int clusterTypeLength = reader.ReadInt32EndianAware();
+                    if (OClient.ProtocolVersion < 24)
+                    {
+                        int clusterTypeLength = reader.ReadInt32EndianAware();
 
-                    string clusterType = System.Text.Encoding.Default.GetString(reader.ReadBytes(clusterTypeLength));
-                    cluster.Type = (OClusterType)Enum.Parse(typeof(OClusterType), clusterType, true);
+                        string clusterType = System.Text.Encoding.Default.GetString(reader.ReadBytes(clusterTypeLength));
+                        cluster.Type = (OClusterType)Enum.Parse(typeof(OClusterType), clusterType, true);
 
-                    cluster.DataSegmentID = reader.ReadInt16EndianAware();
+                        cluster.DataSegmentID = reader.ReadInt16EndianAware();
+                    }
 
                     clusters.Add(cluster);
                 }

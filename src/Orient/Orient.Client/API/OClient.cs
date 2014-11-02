@@ -11,8 +11,9 @@ namespace Orient.Client
 
         public static string DriverName { get { return "OrientDB-NET.binary"; } }
         public static string DriverVersion { get { return "0.2.1"; } }
-        public static short ProtocolVersion { get { return 17; } }
+        public static short ProtocolVersion { get { return 25; } }
         public static int BufferLenght { get; set; }
+        public static string RecordFormat = "ORecordDocument2csv";
 
         static OClient()
         {
