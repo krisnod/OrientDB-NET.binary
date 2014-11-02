@@ -375,9 +375,23 @@ namespace Orient.Client
         {
             Type genericObjectType = genericObject.GetType();
 
-            if (genericObjectType.Name.Equals("ODocument") ||
-                genericObjectType.Name.Equals("OVertex") ||
-                genericObjectType.Name.Equals("OEdge"))
+            bool isDocumentType = false;
+            Type derivedObjectType = genericObjectType;
+
+            do
+            {
+                if (derivedObjectType.Name.Equals("ODocument") ||
+                    derivedObjectType.Name.Equals("OVertex") ||
+                    derivedObjectType.Name.Equals("OEdge"))
+                {
+                    isDocumentType = true;
+                    break;
+                }
+
+                derivedObjectType = derivedObjectType.BaseType;
+            } while (derivedObjectType != null);
+
+            if (isDocumentType)
             {
                 foreach (KeyValuePair<string, object> item in this)
                 {
